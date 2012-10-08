@@ -14,11 +14,19 @@ Because of this, we made some choices, which means it does not have:
 
 The only options you need to set are:
 * What theme is the mobile theme, what is the table theme and what is the desktop theme.
-* Whether or not the module should redirect users to and from
-  m.example.com and www.example.com (or whether your proxy takes care of
-  that)
+* The urls that belong to a profile, e.g. m.example.com for mobile and www.example.com for desktop.
+
+Note that one could optionally set the proxy to do the redirecting. That
+would take some load from Drupal, but it would spread out the
+configuration over the settings in Drupal and the varnish conf. If you
+want to benefit from that, you'll need to hack out the `hook_boot`,
+elswise the code in Drupal will be loaded nonetheless.
 
 # Installation
+Installation and configuration requires actions in Drupal and in
+Varnish.
+
+# Drupal
 Install the module just like all other modules. This module has no admin
 or configuration screens.
 
@@ -26,15 +34,15 @@ Add the settings to your settings.php:
 
     $conf["mobile"]["desktop"] = array(
       "theme" => "my_desktop_theme",
-      "url"   => "www.example.com",
+      "url"   => "http://www.example.com",
     );
     $conf["mobile"]["tablet"] = array(
       "theme" => "my_touch_theme",
-      "url"   => "touch.example.com",
+      "url"   => "http://touch.example.com",
     );
     $conf["mobile"]["mobile"] = array(
       "theme" => "my_mobile_theme",
-      "url"   => "m.example.com",
+      "url"   => "http://m.example.com",
     );
 
 Settings are an array of arrays with arrays (Hey, it's Drupal after all!). The first
@@ -53,6 +61,42 @@ The third ring is the actual per-devise setting. It has three keys:
     `select * from system where type = "theme"`
 * *url* the URL, without protocol and path, but with optional port
   (defaults to :80). Mobile module will trigger on this item too.
+
+## Development and testing.
+
+Testing can be done with [TamperData](https://addons.mozilla.org/en-US/firefox/addon/tamper-data/) to set the `X-Devise`-header from within Firefox.
+
+A better option is to use the provided Mechanize scripts; they forge the
+headers.
+
+## Varnish
+
+You will need to add simple mobile-agent detection to the proxy. It is
+advised to keep this as simple as possible; else false-positives
+(desktop-browsers wrongfully detected as a mobile browser) might make
+things harder.Below is taken from [Tom Deryckere's post](http://www.eldeto.com/content/mobile-device-detection-varnish-0)
+and adapted for this module. Use this as example, please don't copy-paste it blindly into your Varnish. Things
+will break and you will be the one to blame. At least try to understand
+the logic.
+
+    # Default to thinking it's a PC
+    set req.http.X-Device = "desktop";
+
+    if (req.http.User-Agent ~ "iPad" ) {
+      # It says its a iPad - so let's give them the tablet-site
+      set req.http.X-Device = "tablet";
+    }
+    elsif (req.http.User-Agent ~ "iP(hone|od)" || req.http.User-Agent ~ "Android" ) {
+      # It says its a iPhone, iPod or Android - so let's give them the touch-site..
+      set req.http.X-Device = "mobile";
+    }
+    elsif (req.http.User-Agent ~ "SymbianOS" || req.http.User-Agent ~ "^BlackBerry" || req.http.User-Agent ~ "^SonyEricsson" || req.http.User-Agent ~ "^Nokia" || req.http.User-Agent ~ "^SAMSUNG" || req.http.User-Agent ~ "^LG") {
+      # Some other sort of mobile
+      set req.http.X-Device = "mobile";
+    }
+
+Add this to your Varnish configuration, e.g. in
+`/etc/varnish/conf.d/devise-detect.vcl`
 
 # Theme switching and redirection logic
 
@@ -97,10 +141,6 @@ For [Dutch Open Projects](http://dop.nu/)
 Varnish proxy, or another proxy that can send an `X-Device` header.
 
 # TODOs
-Redirection higher up in the Drupal bootstrap. Right now 90% or more of the
-application is loaded and executed before a redirect; causing massive,
-unnessecary overhead.
-
 Since the protocol is hardcoded into the url-setting, you cannot
 dynamically switch to and from https. Dynamically redirecting to and
 from https might also conflict with other modules made for this purpose.
