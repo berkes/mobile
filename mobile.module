@@ -1,0 +1,39 @@
+<?php
+/**
+ * @file: Main module routing Drupal hooks and requests to the
+ * mobile_profile class.
+ *
+ * @author Bèr Kessels <ber@webschuur.com> for Dutch Open Projects
+ * <http://dop.nu>
+ */
+###########################################################################
+#                                  HOOKS                                  #
+###########################################################################
+/**
+ * Hook to set the active theme.
+ *
+ * @return String name of the theme to be activated.
+ *
+ * @ingroup hooks
+ */
+function mobile_custom_theme() {
+  $profile = MobileProfile::select_by_url();
+  if ($profile) {
+    $profile->activate();
+    return $profile->theme;
+  }
+  else {
+    return "";
+  }
+}
+/**
+ * Hook to redirect to the correct url.
+ */
+function mobile_boot() {
+  $headers = apache_request_headers(); //Yup. This is how PHP does things...
+  if (array_key_exists("X-Devise", $headers)) {
+    $profile_key = $headers["X-Devise"];
+    $profile = new MobileProfile($profile_key);
+    $profile->activate();
+  }
+}
