@@ -67,7 +67,16 @@ The third ring is the actual per-devise setting. It has three keys:
 Testing can be done with [TamperData](https://addons.mozilla.org/en-US/firefox/addon/tamper-data/) to set the `X-Devise`-header from within Firefox.
 
 A better option is to use the provided Mechanize scripts; they forge the
-headers.
+headers. These scripts are hackish, have hardcoded values and need to be
+opened up and edited before you can use them.
+
+    $ cd ./mechanize
+    $ gem install "mechanize"
+
+    # Runs a script that manually sets headers.
+    $ ruby ./self_set_header.rb
+    # Runs a script that sets the user agent; Varnish should pick it up.
+    $ ruby ./pass_trough_proxy.rb
 
 ## Varnish
 
