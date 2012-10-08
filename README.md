@@ -27,17 +27,14 @@ Add the settings to your settings.php:
     $conf["mobile"]["desktop"] = array(
       "theme" => "my_desktop_theme",
       "url"   => "www.example.com",
-      "redirect" => true
     );
     $conf["mobile"]["tablet"] = array(
       "theme" => "my_touch_theme",
       "url"   => "touch.example.com",
-      "redirect" => false
     );
     $conf["mobile"]["mobile"] = array(
       "theme" => "my_mobile_theme",
       "url"   => "m.example.com",
-      "redirect" => true
     );
 
 Settings are an array of arrays with arrays (Hey, it's Drupal after all!). The first
@@ -49,42 +46,41 @@ The second ring is an array which describes the devices. This will react
 to the `X-devise`-headers. E.g. `$conf["mobile"]["foo"]` will react to `X-devise = 'foo'`.
 
 The third ring is the actual per-devise setting. It has three keys:
-"theme", "url" and "redirect". 
+"theme" and "url".
 
 * *theme*  a string representing the system name for the theme. Can be
   looked up in e.g. the `system` table in Drupal with 
     `select * from system where type = "theme"`
 * *url* the URL, without protocol and path, but with optional port
   (defaults to :80). Mobile module will trigger on this item too.
-* *redirect* a boolean defining whether or not a redirect should be
-  issued.
 
 # Theme switching and redirection logic
 
-## Situation: redirection is off, varnish-headers are off:
+The switching and redirection logic is kept as simple and predictable as
+possible. This to avoid any edge-cases and weird bugs.
+
+* Varnish-header `X-devise` dictates what profile _should_ be activated;
+  regardless of the url the user is on.
+* The url the user _is_ on, is compared to the url the user _should be_
+  on, according to the profile given with the `X-devise`-header.
+  * If they do not match, the user is redirected.
+  * If they match, the theme for the profile will be activated.
+
+This means:
+
+* One URL will always serve the same theme. This makes caching a lot
+  more predictable and simpler.
+* Users will always be redirected to the URL they should belong on,
+  based on the devise-detection in the proxy.
+
+## Situation: varnish-headers are off:
 * User visits "www.example.com" the theme is set to "my_desktop_theme".
 * User visits "touch.example.com" theme is set to "my_touch_theme".
 * User visits "m.example.com" theme is set to "my_mobile_theme".
 
 Nothing else is done, issued or invoked.
 
-## Situation: redirection is off, varnish-headers are on:
-* User visits "www.example.com" with a desktop-browser, theme is set to "my_desktop_theme".
-* User visits "touch.example.com" with a tablet, theme is set to "my_touch_theme".
-* User visits "m.example.com" with a mobile devise, theme is set to "my_mobile_theme".
-* User visits "www.example.com" with a tablet, theme is set to "my_touch_theme".
-* User visits "www.example.com" with a mobile devise, theme is set to "my_mobile_theme".
-* User visits "touch.example.com" with a desktop-browser, theme is set to "my_touch_theme".
-* etceteras.
-
-## Situation: redirection is on, varnish-headers are off:
-
-Exactly the same as with redirection off. Thss situation is unwanted and considered
-"broken"; redirects are issued according to varnish headers, if they are
-not sent, redirection will not take place.
-
-## Situation: redirection is on, varnish-headers are on:
-
+## Situation: varnish-headers are on:
 * User visits "www.example.com" with a desktop-browser, theme is set to "my_desktop_theme". No redirect.
 * User visits "touch.example.com" with a tablet, theme is set to "my_touch_theme". No redirect.
 * User visits "m.example.com" with a mobile devise, theme is set to "my_mobile_theme". No redirect.
@@ -104,3 +100,15 @@ Varnish proxy, or another proxy that can send an `X-Device` header.
 Redirection higher up in the Drupal bootstrap. Right now 90% or more of the
 application is loaded and executed before a redirect; causing massive,
 unnessecary overhead.
+
+Since the protocol is hardcoded into the url-setting, you cannot
+dynamically switch to and from https. Dynamically redirecting to and
+from https might also conflict with other modules made for this purpose.
+We should make a detection of http versus https and redirect the user to
+the same protocol he or she is already on.
+
+# Known issues
+Drupal [does not allow wap:// or mobile://](http://api.drupal.org/api/drupal/includes!common.inc/function/drupal_strip_dangerous_protocols/7) protocol, only a subset of undocumented protocols. You cannot redirect to these kind of URLS.
+
+This module will not work together with modules that do redirections
+(such as mobile tools, domain-access, securepages), nor with themes that handle mobile detection (and redirects) themselves. If you run into conflicts, just remove the other module :).
