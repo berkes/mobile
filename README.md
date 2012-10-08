@@ -48,10 +48,12 @@ Add the settings to your settings.php:
 Settings are an array of arrays with arrays (Hey, it's Drupal after all!). The first
 key, is the namespace for this module:
 
-   $conf["mobile"] // Everything under here is part of settings for this module
+    $conf["mobile"] // Everything under here is part of settings for this module
 
 The second ring is an array which describes the devices. This will react
-to the `X-devise`-headers. E.g. `$conf["mobile"]["foo"]` will react to `X-devise = 'foo'`.
+to the `X-Devise`-headers. 
+
+    $conf["mobile"]["foo"] // will react to `X-Devise = 'foo'`.
 
 The third ring is the actual per-devise setting. It has three keys:
 "theme" and "url".
@@ -112,10 +114,10 @@ Add this to your Varnish configuration, e.g. in
 The switching and redirection logic is kept as simple and predictable as
 possible. This to avoid any edge-cases and weird bugs.
 
-* Varnish-header `X-devise` dictates what profile _should_ be activated;
+* Varnish-header `X-Devise` dictates what profile _should_ be activated;
   regardless of the url the user is on.
 * The url the user _is_ on, is compared to the url the user _should be_
-  on, according to the profile given with the `X-devise`-header.
+  on, according to the profile given with the `X-Devise`-header.
   * If they do not match, the user is redirected.
   * If they match, the theme for the profile will be activated.
 
