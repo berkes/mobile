@@ -169,13 +169,19 @@ Add three so-called "multisite environments":
   * `sites/www.example.com`
   * `sites/touch.example.com`
   * `sites/m.example.com`
-* Add cleaned and empty settings.php files in there, then add a little
-  content; for example `sites/touch.example.com/settings.php`:
+* Add cleaned and empty settings.php files in there, then add a little content; 
+ 
+for example `sites/touch.example.com/settings.php`:
 
       <?php
-      require "../default/settings.php" # This file extends the default settings.php
+      
+      # This file extends the default settings.php.
+      require "../default/settings.php";
+      
+      # And then overrides settings.
       $conf["site_frontpage"] = "home-touch";
       $conf["site_name"] = "Example.com, now 100% tablet-compatible!"
+
 
 This sets the url for the homepage to "home-touch", where you can serve
 alternative content for the "touch" devices. It also changes the
