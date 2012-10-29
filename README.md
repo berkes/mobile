@@ -172,11 +172,10 @@ Add three so-called "multisite environments":
 * Add cleaned and empty settings.php files in there, then add a little
   content; for example `sites/touch.example.com/settings.php`:
 
-    <?php
-    require "../default/settings.php" # This file extends the default
-settings.php
-    $conf["site_frontpage"] = "home-touch";
-    $conf["site_name"] = "Example.com, now 100% tablet-compatible!"
+      <?php
+      require "../default/settings.php" # This file extends the default settings.php
+      $conf["site_frontpage"] = "home-touch";
+      $conf["site_name"] = "Example.com, now 100% tablet-compatible!"
 
 This sets the url for the homepage to "home-touch", where you can serve
 alternative content for the "touch" devices. It also changes the
@@ -189,7 +188,7 @@ users and can run with much slimmer PHP-threads), database-credentials
 
 ## Thread-safety
 This setup is also reasonably thread-safe. Not much (so, actually, it is simply not
-threadsafe at all) but a lot more threadsafe then most other mobile
+threadsafe at all, there ain't such thing as "a littlebit threadsafe") but a lot more threadsafe then most other mobile
 environments who attempt to set these global(!) persistent(!) variables
 in-thread. Affecting all other running threads, regardless of their
 "mobile-status". In any case: never, ever set these variables in the
