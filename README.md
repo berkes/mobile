@@ -51,7 +51,7 @@ key, is the namespace for this module:
     $conf["mobile"] // Everything under here is part of settings for this module
 
 The second ring is an array which describes the devices. This will react
-to the `X-Devise`-headers. 
+to the `X-Devise`-headers.
 
     $conf["mobile"]["foo"] // will react to `X-Devise = 'foo'`.
 
@@ -110,7 +110,6 @@ Add this to your Varnish configuration, e.g. in
 `/etc/varnish/conf.d/devise-detect.vcl`
 
 # Theme switching and redirection logic
-
 The switching and redirection logic is kept as simple and predictable as
 possible. This to avoid any edge-cases and weird bugs.
 
@@ -144,6 +143,58 @@ Nothing else is done, issued or invoked.
 * User visits "touch.example.com" with a desktop-browser, user is redirected to "www.example.com", then theme is set to "my_touch_theme".
 * etceteras.
 
+# Different settings for sites
+Many modules that handle "mobile" do much more then handling mobile.
+They, for example, offer options to have alternative frontpages based on
+the device. This module does nothing of such. It delegates this to
+Drupal, which is more sturdy, predictable and performant.
+
+Say, you want a different title and frontpage for tables and mobile,
+here is how to achieve that.
+
+## Given
+A setup with mobile where
+* www.example.com is the "desktop"
+* touch.example.com is the "tablet/touch" version.
+* m.example.com is the "mobile" version.
+
+## When
+This all works, and user is correctly redirected and gets correct
+theme based on the Varnish Headers.
+
+## Then
+Add three so-called "multisite environments":
+
+* Create three directories; from Drupal's docroot:
+  * `sites/www.example.com`
+  * `sites/touch.example.com`
+  * `sites/m.example.com`
+* Add cleaned and empty settings.php files in there, then add a little
+  content; for example `sites/touch.example.com/settings.php`:
+
+    <?php
+    require "../default/settings.php" # This file extends the default
+settings.php
+    $conf["site_frontpage"] = "home-touch";
+    $conf["site_name"] = "Example.com, now 100% tablet-compatible!"
+
+This sets the url for the homepage to "home-touch", where you can serve
+alternative content for the "touch" devices. It also changes the
+_site\_name_ which appears in the title of the site.
+
+You can change any settings in these settings.php-files, including
+memory-limits (e.g. touch-devises and mobile might never need logged-in
+users and can run with much slimmer PHP-threads), database-credentials
+(e.g. to use a slave database-server for mobile) and so on. 
+
+## Thread-safety
+This setup is also reasonably thread-safe. Not much (so, actually, it is simply not
+threadsafe at all) but a lot more threadsafe then most other mobile
+environments who attempt to set these global(!) persistent(!) variables
+in-thread. Affecting all other running threads, regardless of their
+"mobile-status". In any case: never, ever set these variables in the
+hook_init and its friends. Ever.
+
 # Author
 Bèr Kessels <ber@webschuur.com>
 For [Dutch Open Projects](http://dop.nu/)
@@ -157,6 +208,11 @@ dynamically switch to and from https. Dynamically redirecting to and
 from https might also conflict with other modules made for this purpose.
 We should make a detection of http versus https and redirect the user to
 the same protocol he or she is already on.
+
+Drush breaks; mobile should be
+* Wrapped in a condition so it does not redirect etc. in case of Drush
+  and CLI
+* aware of Drush commandline-options to set Varnish-headers.
 
 # Known issues
 Drupal [does not allow wap:// or mobile://](http://api.drupal.org/api/drupal/includes!common.inc/function/drupal_strip_dangerous_protocols/7) protocol, only a subset of undocumented protocols. You cannot redirect to these kind of URLS.
