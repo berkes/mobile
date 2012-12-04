@@ -30,10 +30,17 @@ function mobile_custom_theme() {
  * Hook to redirect to the correct url.
  */
 function mobile_boot() {
+
+  module_load_include("inc", "mobile", "mobile_profile");
   $headers = apache_request_headers(); //Yup. This is how PHP does things...
   if (array_key_exists("X-Devise", $headers)) {
     $profile_key = $headers["X-Devise"];
     $profile = new MobileProfile($profile_key);
     $profile->activate();
   }
+  //Drupal 6 has no hook_custom_theme, so we call it mannually here,
+  //  this ensures everything works the same,
+  //  but it also allows us to keep the drupal 6 and 7 code similar. Good for
+  //  bugfixes and maintanance.
+  mobile_custom_theme();
 }

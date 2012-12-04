@@ -2,6 +2,5 @@ name = Mobile
 description = Switches (mobile)theme and optionally redirects users based on Varnish
 headers.
 
-version = 7.x-1.0
-core = 7.x
-files[] = mobile_profile.inc
+version = "6.x-1.0"
+core = 6.x

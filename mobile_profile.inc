@@ -62,6 +62,7 @@ class MobileProfile {
   // redirector.
   public function activate() {
     $this->active = TRUE;
+    $this->activate_theme();
     $this->redirect();
   }
 
@@ -73,10 +74,15 @@ class MobileProfile {
     return ($scheme == $this_url["scheme"] && $host == $this_url["host"]);
   }
 
+  private function activate_theme() {
+    global $custom_theme;
+    $custom_theme = $this->theme;
+  }
+
   // Detect whether $this theme is active.
   private function theme_is_active() {
-    global $conf;
-    return ($conf["theme_default"] == $this->theme);
+    global $theme;
+    return ($theme == $this->theme);
   }
 
   // Builds the full URL for a redirect: includes any queries, paths and
