@@ -55,7 +55,7 @@ to the `X-Devise`-headers.
 
     $conf["mobile"]["foo"] // will react to `X-Device = 'foo'`.
 
-The third ring is the actual per-devise setting. It has three keys:
+The third ring is the actual per-device setting. It has two keys:
 "theme" and "url".
 
 * *theme*  a string representing the system name for the theme. Can be
