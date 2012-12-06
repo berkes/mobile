@@ -53,7 +53,7 @@ key, is the namespace for this module:
 The second ring is an array which describes the devices. This will react
 to the `X-Devise`-headers.
 
-    $conf["mobile"]["foo"] // will react to `X-Devise = 'foo'`.
+    $conf["mobile"]["foo"] // will react to `X-Device = 'foo'`.
 
 The third ring is the actual per-devise setting. It has three keys:
 "theme" and "url".
