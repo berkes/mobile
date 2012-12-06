@@ -13,7 +13,7 @@ Because of this, we made some choices, which means it does not have:
 * User-preferences: users cannot change the theme with e.g. a link.
 
 The only options you need to set are:
-* What theme is the mobile theme, what is the table theme and what is the desktop theme.
+* What theme is the mobile theme, what is the tablet theme and what is the desktop theme.
 * The urls that belong to a profile, e.g. m.example.com for mobile and www.example.com for desktop.
 
 Note that one could optionally set the proxy to do the redirecting. That
@@ -53,9 +53,9 @@ key, is the namespace for this module:
 The second ring is an array which describes the devices. This will react
 to the `X-Devise`-headers.
 
-    $conf["mobile"]["foo"] // will react to `X-Devise = 'foo'`.
+    $conf["mobile"]["foo"] // will react to `X-Device = 'foo'`.
 
-The third ring is the actual per-devise setting. It has three keys:
+The third ring is the actual per-device setting. It has two keys:
 "theme" and "url".
 
 * *theme*  a string representing the system name for the theme. Can be
