@@ -13,7 +13,7 @@ Because of this, we made some choices, which means it does not have:
 * User-preferences: users cannot change the theme with e.g. a link.
 
 The only options you need to set are:
-* What theme is the mobile theme, what is the table theme and what is the desktop theme.
+* What theme is the mobile theme, what is the tablet theme and what is the desktop theme.
 * The urls that belong to a profile, e.g. m.example.com for mobile and www.example.com for desktop.
 
 Note that one could optionally set the proxy to do the redirecting. That
